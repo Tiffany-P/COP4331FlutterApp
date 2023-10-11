@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -36,16 +38,22 @@ Future<void> loginUser(
     );
 
     if (response.statusCode == 200) {
-      // Login successful, handle the response, e.g., parse authentication tokens.
-      final responseData = json.decode(response.body);
-      final authToken = responseData['authToken'];
-      final refreshToken = responseData['refreshToken'];
+      final Map<String, dynamic> res = json.decode(response.body);
+      final int id = res['id'] as int;
+      print(id);
+      if (id <= 0) {
+      } else {
+        // Login successful, handle the response, e.g., parse authentication tokens.
+        final responseData = json.decode(response.body);
+        final authToken = responseData['authToken'];
+        final refreshToken = responseData['refreshToken'];
 
-      print("User: $login, Pass: $password");
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => HomePage()),
-      );
+        print("User: $login, Pass: $password");
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()),
+        );
+      }
 
       // You can save these tokens for future authenticated requests.
     } else {
@@ -61,45 +69,86 @@ Future<void> loginUser(
 }
 
 class LoginPage extends StatelessWidget {
+  TextEditingController usernameInput = TextEditingController();
+  TextEditingController passwordInput = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Login'),
+        title: Text('Log in'),
+        backgroundColor: Color.fromARGB(255, 86, 17, 183),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            TextField(
-              decoration: InputDecoration(labelText: 'Username'),
-            ),
-            TextField(
-              obscureText: true,
-              decoration: InputDecoration(labelText: 'Password'),
-            ),
-            SizedBox(height: 16.0),
-            ElevatedButton(
-              onPressed: () {
-                // Get username and password from text fields
-                String username = 'TiffP'; // Replace with actual username input
-                String password =
-                    'COP4331'; // Replace with actual password input
-
-                loginUser(context, username, password);
-              },
-              child: Text('Login'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => RegisterPage()),
-                );
-              },
-              child: Text('Sign up'),
-            ),
-          ],
+        child: Container(
+          width: 300.0,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              TextField(
+                controller: usernameInput,
+                decoration: InputDecoration(
+                  labelText: 'Username',
+                  labelStyle:
+                      TextStyle(color: Color.fromARGB(255, 86, 17, 183)),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(
+                        color: Color.fromARGB(255, 86, 17, 183), width: 4.0),
+                  ),
+                ),
+              ),
+              TextField(
+                controller: passwordInput,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  labelStyle:
+                      TextStyle(color: Color.fromARGB(255, 86, 17, 183)),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(
+                        color: Color.fromARGB(255, 86, 17, 183), width: 4.0),
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: FlatButton(
+                  onPressed: () {
+                    // Handle button press
+                  },
+                  child: Text('Forgot password',
+                      style:
+                          TextStyle(color: Color.fromARGB(255, 158, 48, 189))),
+                ),
+              ),
+              const SizedBox(height: 30.0),
+              ElevatedButton(
+                onPressed: () {
+                  loginUser(context, usernameInput.text, passwordInput.text);
+                },
+                style: ElevatedButton.styleFrom(
+                    primary: Color.fromARGB(255, 158, 48, 189),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 120, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    textStyle:
+                        TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                child: Text('Login'),
+              ),
+              FlatButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => RegisterPage()),
+                  );
+                },
+                child: Text('Don\'t have an account? Sign up',
+                    style: TextStyle(color: Color.fromARGB(255, 86, 17, 183))),
+              ),
+            ],
+          ),
         ),
       ),
     );
