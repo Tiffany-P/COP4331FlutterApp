@@ -60,6 +60,7 @@ class MyApp extends StatelessWidget {
       title: 'Login App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        scaffoldBackgroundColor: Color.fromARGB(255, 242, 234, 255),
       ),
       home: LoginPage(),
     );
