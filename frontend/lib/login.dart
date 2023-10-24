@@ -112,7 +112,7 @@ class LoginPage extends StatelessWidget {
               ),
               Align(
                 alignment: Alignment.centerRight,
-                child: FlatButton(
+                child: TextButton(
                   onPressed: () {
                     // Handle button press
                   },
@@ -137,7 +137,7 @@ class LoginPage extends StatelessWidget {
                         TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                 child: Text('Login'),
               ),
-              FlatButton(
+              TextButton(
                 onPressed: () {
                   Navigator.push(
                     context,

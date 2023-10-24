@@ -164,7 +164,7 @@ class RegisterPage extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                     primary: Color.fromARGB(255, 158, 48, 189),
                     padding:
-                        EdgeInsets.symmetric(horizontal: 120, vertical: 10),
+                        EdgeInsets.symmetric(horizontal: 114, vertical: 10),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
@@ -172,7 +172,7 @@ class RegisterPage extends StatelessWidget {
                         TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                 child: Text('Sign up'),
               ),
-              FlatButton(
+              TextButton(
                 onPressed: () {
                   Navigator.push(
                     context,
