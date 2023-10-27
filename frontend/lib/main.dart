@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'login.dart';
+import 'package:quiz_app/default.dart';
 
 void main() {
   runApp(MyApp());
@@ -62,7 +62,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         scaffoldBackgroundColor: Color.fromARGB(255, 242, 234, 255),
       ),
-      home: LoginPage(),
+      home: DefaultPage(),
     );
   }
 }

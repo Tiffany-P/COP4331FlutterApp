@@ -7,7 +7,7 @@ import 'register.dart';
 import 'home.dart';
 
 // Define the API endpoint URL
-final String apiUrl = 'http://10.0.2.2:5000/api/login';
+final String apiUrl = 'http://10.0.2.2:5000/api/users/login';
 
 class User {
   final String login;
@@ -39,9 +39,9 @@ Future<void> loginUser(
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> res = json.decode(response.body);
-      final int id = res['id'] as int;
+      final String id = res['id'];
       print(id);
-      if (id <= 0) {
+      if (id == null) {
       } else {
         // Login successful, handle the response, e.g., parse authentication tokens.
         final responseData = json.decode(response.body);
@@ -112,7 +112,7 @@ class LoginPage extends StatelessWidget {
               ),
               Align(
                 alignment: Alignment.centerRight,
-                child: FlatButton(
+                child: TextButton(
                   onPressed: () {
                     // Handle button press
                   },
@@ -137,7 +137,7 @@ class LoginPage extends StatelessWidget {
                         TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                 child: Text('Login'),
               ),
-              FlatButton(
+              TextButton(
                 onPressed: () {
                   Navigator.push(
                     context,
