@@ -43,7 +43,7 @@ class HomePage extends StatelessWidget {
             '   Popular',
             style: TextStyle(
               color: Colors.white, // Set text color to white
-              fontSize: 24, // Set text font size
+              fontSize: 23, // Set text font size
             ),
           ),
           const SizedBox(height: 30.0),
@@ -51,7 +51,7 @@ class HomePage extends StatelessWidget {
             '   Suggested',
             style: TextStyle(
               color: Colors.white, // Set text color to white
-              fontSize: 24, // Set text font size
+              fontSize: 23, // Set text font size
             ),
           ),
           const SizedBox(height: 30.0),
