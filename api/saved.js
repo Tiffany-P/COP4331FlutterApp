@@ -1,9 +1,9 @@
 const savedRouter = require("express").Router();
-require("dotenv").config();
+// require("dotenv").config();
 
 var ObjectId = require('mongodb').ObjectId;
 const MongoClient = require('mongodb').MongoClient;
-const url = process.env.MONGODB_URI;
+const url = "mongodb+srv://TiffPet:COP4331@cluster0.lswztxa.mongodb.net/";
 const client = new MongoClient(url);
 client.connect();
 
@@ -18,23 +18,29 @@ savedRouter.post("/get", async (req, res) => {
 	let error = 200;
 
 	const {id} = req.body;
+    console.log("Received ID: " + id);
 
 	// some annoying variable jargon
-	var _id = new ObjectId(id);
+	var UId = new ObjectId(id);
 
-	console.log("Begin GET for Saved Quiz with ID" + id);
+	console.log("Begin GET for Saved Quiz with ID" + UId);
 
 	try
 	{
 		const db = client.db("LargeProject");
-		const result = await db.collection('Saved').find({_id}).toArray();
+		const result = await db.collection('Saved').find({UserId:UId}).toArray();
 
 		if (result.length > 0)
 		{
-			quizId = result[0].QuizId;
-			userId = result[0].UserId;
-
-			var ret = {QuizId:quizId, UserId:userId, error:error};
+            console.log("successful");
+            const quizList = result.map((item) => {
+                return {
+                  QuizId: item.QuizId,
+                  _id: item._id,
+                };
+              });
+        
+              res.status(200).json(quizList);
 		}
 		else
 		{
