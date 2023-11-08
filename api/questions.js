@@ -1,9 +1,9 @@
 const questionsRouter = require("express").Router();
-require("dotenv").config();
+// require("dotenv").config();
 
 var ObjectId = require('mongodb').ObjectId;
 const MongoClient = require('mongodb').MongoClient;
-const url = process.env.MONGODB_URI;
+const url = "mongodb+srv://TiffPet:COP4331@cluster0.lswztxa.mongodb.net/";
 const client = new MongoClient(url);
 client.connect();
 
@@ -52,6 +52,48 @@ questionsRouter.post("/search", async (req, res) => {
   }
   
   res.status(200).json(ret);
+});
+
+questionsRouter.post("/get", async (req, res) => {
+	let error = 200;
+
+	const {quizId} = req.body;
+    console.log("Received quizID: " + quizId);
+
+	// some annoying variable jargon
+	var QId = new ObjectId(quizId);
+
+	console.log("Begin GET for questions with  quizID" + QId);
+
+	try
+	{
+		const db = client.db("LargeProject");
+		const result = await db.collection('Questions').find({QuizId:QId}).toArray();
+
+		if (result.length > 0)
+		{
+            console.log("successful");
+            const quizList = result.map((item) => {
+                return {
+                  Question: item.Question,
+                  _id: item._id,
+                };
+              });
+        
+              res.status(200).json(quizList);
+		}
+		else
+		{
+			var ret = {error:404};
+		}
+	}
+	catch(e)
+	{
+		error = e.toString();
+		var ret = {error:e.message};
+	}
+
+	res.status(200).json(ret);
 });
 
 // Add
