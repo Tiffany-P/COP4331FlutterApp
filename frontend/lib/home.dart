@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'register.dart';
+import 'myQuizzes.dart';
 
 class HomePage extends StatelessWidget {
   @override
@@ -13,7 +14,18 @@ class HomePage extends StatelessWidget {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[],
+          children: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => myQuizzesPage()),
+                );
+              },
+              child: Text('Already have an account? Log in',
+                  style: TextStyle(color: Color.fromARGB(255, 86, 17, 183))),
+            ),
+          ],
         ),
       ),
     );
