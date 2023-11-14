@@ -64,6 +64,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'flashcardsPage.dart';
 
 final String userId = "653181459014bfbb8cff6c2c";
 
@@ -106,14 +107,37 @@ class _QuizzesPageState extends State<myQuizzesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Saved Quizzes'),
+        title: Text('Our Logo'),
+        backgroundColor: Color.fromARGB(255, 86, 17, 183),
       ),
-      body: ListView.builder(
-        itemCount: quizList.length,
-        itemBuilder: (context, index) {
-          final quiz = quizList[index];
-          return FlashCardWidget(quizId: quiz['QuizId']);
-        },
+      backgroundColor: Color.fromARGB(255, 56, 17, 91),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start, // Left-align the title
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              'Saved Quizzes', // Replace with your desired title
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: quizList.length,
+              itemBuilder: (context, index) {
+                final quiz = quizList[index];
+                return FlashCardWidget(
+                  quizId: quiz['QuizId'],
+                  quizName: quiz['QuizName'],
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -121,25 +145,45 @@ class _QuizzesPageState extends State<myQuizzesPage> {
 
 class FlashCardWidget extends StatelessWidget {
   final String quizId;
+  final String quizName;
 
-  FlashCardWidget({required this.quizId});
+  FlashCardWidget({required this.quizId, required this.quizName});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.all(16.0),
-      child: Card(
-        elevation: 5,
-        child: Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Text(
-                'Quiz ID: $quizId',
-                style: TextStyle(fontSize: 18),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => FlashcardPage(quizId: quizId)),
+        );
+        // Handle the tap, you can navigate to another screen or perform any action with the quizId
+        print('Tapped on Quiz ID: $quizId');
+      },
+      child: Container(
+        margin: EdgeInsets.all(16.0),
+        child: Card(
+          color: Color.fromARGB(255, 86, 17, 183),
+          elevation: 10,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(
+                12.0), // Set corner radius to 12 for rounded corners
+          ),
+          child: Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text(
+                  '$quizName',
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Color.fromARGB(255, 255, 255, 255),
+                  ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

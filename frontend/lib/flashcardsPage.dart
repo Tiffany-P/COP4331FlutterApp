@@ -16,6 +16,7 @@ class FlashcardPage extends StatefulWidget {
 class _FlashcardPageState extends State<FlashcardPage> {
   // Add your flashcard logic here
   List<Flashcard> flashcards = [];
+  List<Flashcard> questionIDs = [];
   int currentIndex = 0;
 
   @override
@@ -42,7 +43,10 @@ class _FlashcardPageState extends State<FlashcardPage> {
         print(data);
 
         setState(() {
-          flashcards = data.map((item) => Flashcard(item['Question'])).toList();
+          flashcards = data
+              .map((item) => Flashcard(item['Question'], item['_id']))
+              .toList();
+          // flashcards = data.map((item) => Flashcard(item['_id'])).toList();
         });
       } else {
         // Handle the case when no questions are found or an error occurs.
@@ -56,9 +60,12 @@ class _FlashcardPageState extends State<FlashcardPage> {
   }
 
   Future<void> fetchAnswerAndFlipCard(bool flip) async {
+    print("fetching and flipping :");
     if (currentIndex < flashcards.length) {
-      final question = flashcards[currentIndex].question;
-      final answer = await fetchAnswer(question);
+      final questionId = flashcards[currentIndex].questionId;
+
+      print("Getting answer:");
+      final answer = await fetchAnswer(questionId);
       setState(() {
         flashcards[currentIndex].answer = answer;
 
@@ -75,11 +82,20 @@ class _FlashcardPageState extends State<FlashcardPage> {
     }
   }
 
-  Future<String> fetchAnswer(String question) async {
+  Future<String> fetchAnswer(String questionId) async {
+    print("API answers for questiond id:" + questionId);
+    // final response = await http.post(
+    //   Uri.parse('http://10.0.2.2:5000/api/answers/get'),
+    //   body: json.encode({'questionId': questionId}),
+    //   headers: {'Content-Type': 'application/json'},
+    // );
+
     final response = await http.post(
       Uri.parse('http://10.0.2.2:5000/api/answers/get'),
-      body: json.encode({'id': widget.quizId}),
-      headers: {'Content-Type': 'application/json'},
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({'questionId': questionId}),
     );
 
     if (response.statusCode == 200) {
@@ -88,7 +104,7 @@ class _FlashcardPageState extends State<FlashcardPage> {
       print("Quiz Data Answers:");
       print(data);
 
-      return data['answer'];
+      return data['Answer'];
     }
     return 'Answer not found';
   }
@@ -100,12 +116,19 @@ class _FlashcardPageState extends State<FlashcardPage> {
     });
   }
 
+  void prevCard() {
+    setState(() {
+      currentIndex = (currentIndex - 1) % flashcards.length;
+      fetchAnswerAndFlipCard(false);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Flashcards'),
-      ),
+          title: Text('Flashcards'),
+          backgroundColor: Color.fromARGB(255, 86, 17, 183)),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -115,9 +138,34 @@ class _FlashcardPageState extends State<FlashcardPage> {
                 flashcard: flashcards[currentIndex],
                 onToggle: () => fetchAnswerAndFlipCard(true),
               ),
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              ElevatedButton(
+                onPressed: () => nextCard(),
+                child: Text('Next Card'),
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(
+                      Color.fromARGB(255, 86, 2, 187)),
+                ),
+              ),
+              // Row(children: [
+              ElevatedButton(
+                onPressed: () => prevCard(),
+                child: Text('Prev Card'),
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(
+                      Color.fromARGB(255, 86, 2, 187)),
+                ),
+              ),
+            ]),
             ElevatedButton(
-              onPressed: () => nextCard(),
-              child: Text('Next Card'),
+              onPressed: () {},
+              child: Text((currentIndex + 1).toString() +
+                  "/" +
+                  flashcards.length.toString()),
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(
+                    Color.fromARGB(255, 86, 2, 187)),
+              ),
             ),
           ],
         ),
@@ -128,10 +176,12 @@ class _FlashcardPageState extends State<FlashcardPage> {
 
 class Flashcard {
   final String question;
+  final String questionId;
   String? answer;
   bool isFlipped;
 
-  Flashcard(this.question, {this.answer, this.isFlipped = false});
+  Flashcard(this.question, this.questionId,
+      {this.answer, this.isFlipped = false});
 }
 
 class FlashcardWidget extends StatefulWidget {
@@ -154,8 +204,12 @@ class _FlashcardWidgetState extends State<FlashcardWidget> {
       child: AnimatedSwitcher(
         duration: Duration(milliseconds: 500),
         child: widget.flashcard.isFlipped
-            ? CardSide(text: widget.flashcard.answer, color: Colors.green)
-            : CardSide(text: widget.flashcard.question, color: Colors.blue),
+            ? CardSide(
+                text: widget.flashcard.answer,
+                color: Color.fromARGB(255, 218, 150, 255))
+            : CardSide(
+                text: widget.flashcard.question,
+                color: Color.fromARGB(255, 218, 150, 255)),
       ),
     );
   }
@@ -174,8 +228,15 @@ class CardSide extends StatelessWidget {
       height: 200,
       alignment: Alignment.center,
       color: color,
-      child:
-          Text(text ?? '', style: TextStyle(fontSize: 18, color: Colors.white)),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0), // Adjust padding as needed
+          child: Text(
+            text ?? '',
+            style: TextStyle(fontSize: 18, color: Colors.white),
+          ),
+        ),
+      ),
     );
   }
 }
