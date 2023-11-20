@@ -51,7 +51,7 @@ Future<void> loginUser(
         print("User: $login, Pass: $password");
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => HomePage()),
+          MaterialPageRoute(builder: (context) => HomePage(id, login)),
         );
       }
 
