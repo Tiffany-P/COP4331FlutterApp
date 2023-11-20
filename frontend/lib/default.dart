@@ -3,11 +3,19 @@ import 'package:quiz_app/login.dart';
 import 'register.dart';
 
 class DefaultPage extends StatelessWidget {
+  const DefaultPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height / 2;
     
     return Scaffold(
+      appBar: AppBar(
+        toolbarHeight: 70,
+        centerTitle: true,
+        title: Image.asset('assets/images/logo.png', width: 160, height: 190),
+        backgroundColor: const Color.fromARGB(255, 66, 65, 146),
+      ),
       body: Container(
         decoration: const BoxDecoration (
           color: Color(0xff3c2aa8),
@@ -23,23 +31,7 @@ class DefaultPage extends StatelessWidget {
               child: Column(
                 children: [
                   Container(
-                    // ourlogorsC (4:23)
-                    margin: const EdgeInsets.fromLTRB(0, 0, 0, 90), // adjust later when image included
-                    padding: const EdgeInsets.fromLTRB(25, 52, 0, 0),
-                    child: const Align(
-                      alignment: FractionalOffset.topLeft,
-                    child: Text('Logo', textAlign: TextAlign.left, style: TextStyle(
-                      color: Color.fromRGBO(255, 255, 255, 1),
-                      fontFamily: 'Inter',
-                      fontSize: 40,
-                      letterSpacing: 0 ,
-                      fontWeight: FontWeight.normal,
-                      height: 1
-                    ),
-                    ),
-                    ),
-                  ),
-                  Container(
+                    margin: const EdgeInsets.only(top: 100.0),
                     constraints: const BoxConstraints (
                       maxWidth: 100,
                     ),
@@ -61,17 +53,17 @@ class DefaultPage extends StatelessWidget {
                     constraints: const BoxConstraints (
                       maxWidth: 300,
                     ),
-                    child: const Text('Our Really Cool Slogan', textAlign: TextAlign.center, style: TextStyle(
+                    child: const Text('Embrace the Magic of Learning', textAlign: TextAlign.center, style: TextStyle(
                         color: Color.fromRGBO(255, 255, 255, 1),
                         fontFamily: 'Inter',
-                        fontSize: 30,
+                        fontSize: 25,
                         letterSpacing: 0,
                         fontWeight: FontWeight.bold,
                         height: 1
                       )
                     ),
                   ),
-              const SizedBox(height: 60.0),
+              const SizedBox(height: 40.0),
             ElevatedButton(
                 onPressed: () {
                    Navigator.push(
@@ -80,7 +72,7 @@ class DefaultPage extends StatelessWidget {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                    primary: Color.fromARGB(255, 158, 48, 189),
+                    backgroundColor: const Color.fromARGB(255, 158, 48, 189),
                     padding:
                         const EdgeInsets.symmetric(horizontal: 60, vertical: 10),
                     shape: RoundedRectangleBorder(

@@ -1,162 +1,188 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-//import 'package:quiz_app/quiz_model.dart';
 import 'dart:convert';
-import 'register.dart';
+import 'flashcardsPage.dart';
+
+String userId = '';
 
 class Item {
   final String term;
- 
-  Item({required this.term});
+  final String id;
 
-  Map<String, dynamic> toJson() => {
-      'term': term,
-    };
-}
+  const Item({
+    required this.term,
+    required this.id,
+  });
 
-class QuizModel {
-  String? quiz_title;
-  String? author;
-
-  QuizModel(this.quiz_title, this.author);
+  factory Item.fromJson(Map<String, dynamic> json) {
+    return Item(
+      id: json['_id'] as String,
+      term: json['Name'] as String,
+    );
+  }
 }
 
 class ItemService {
-  final String apiUrl = 'https://cop4331-27-c6dfafc737d8.herokuapp.com/api/quizzes/search';  // Replace with your API endpoint
-  
-  Future<Map<String, dynamic>> searchItems(String query) async {
-   // List<Map<String, dynamic>> map = [];
-   
-  final item = Item(term: query);
-  final userJson = jsonEncode(item);
+  final String apiUrl =
+      'http://10.0.2.2:5000/api/quizzes/search'; // Replace with your API endpoint
 
-  print("Term: $query");
+  Future<List> searchItems(String query) async {
+    print("Term: $query");
 
-  try {
-    final response = await http.post(
-      Uri.parse(apiUrl),
-      headers: <String, String>{
-        'Content-Type': 'application/json',
-      },
-      body: userJson,
-    );
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({'term': query}),
+      );
 
-    if (response.statusCode == 200) {
+      if (response.statusCode == 200) {
+        print(query);
 
-     final Map<String, dynamic> res = json.decode(response.body);
-      print(res);
-      return res;
-     
-    
-    } else {
-      throw Exception('Failed to load items');
+        final Map<String, dynamic> data = json.decode(response.body);
+
+        print("Search Answers:");
+        print(data['result']);
+        List<dynamic> allPostList =
+            data['result'].map((e) => Item.fromJson(e)).toList();
+        return allPostList;
+      } else {
+        throw Exception('Failed to load items');
+      }
+    } catch (e) {
+      // Handle network or server connection issues.
+      print('Error: $e');
     }
-    }
-    catch (e) {
-    // Handle network or server connection issues.
-    print('Error: $e');
-
+    throw Exception('Failed to load items');
   }
-  throw Exception('Failed to return');
-  }
-
 }
+
 class SearchPage extends StatefulWidget {
-  const SearchPage({Key? key}) : super(key: key);
+  final String id;
+  
+  SearchPage({super.key, required this.id}){
+    userId = id;
+  }
 
   @override
-  State<SearchPage> createState() => _SearchPageState();
+  _SearchPageState createState() => _SearchPageState();
 }
+
 class _SearchPageState extends State<SearchPage> {
-  // fake list, this will be deleted later
-  static List<QuizModel> main_quizzes_list = [
-    QuizModel("Planets", "Planet Lover"),
-    QuizModel("Cars", "Lightning McQueen"),
-    
-
-  ];
-  // creating  list that will be displayed and filter
-  List<QuizModel> display_list = List.from(main_quizzes_list);
-  void updateList(String value) {
-    
-    setState(() {
-      display_list = main_quizzes_list.where((element) => 
-        element.quiz_title!.toLowerCase().contains(value.toLowerCase())).toList();
-    });
-    
-  }
-
   final ItemService _itemService = ItemService();
-  List<Item> _searchResults = [];
+
+  List<dynamic> _searchResults = [];
 
   void _searchItems(String query) async {
-    Map<String, dynamic> results = await _itemService.searchItems(query);
-    //setState(() {
-   //   print(results);
-    //});
+    if(query != ''){
+      List<dynamic> results = (await _itemService.searchItems(query));
+      setState(() {
+        _searchResults = results;
+      });
+    }
+    else  {
+      setState(() {
+        _searchResults = List.empty();
+      });
+    }
+ 
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('QuizWizz'),
-        backgroundColor: Color.fromARGB(255, 86, 17, 183),
-        
-        
+        title: Image.asset('assets/images/logo.png', width: 120, height: 140,),
+        backgroundColor: const Color.fromARGB(255, 86, 17, 183),
       ),
-      backgroundColor: Color.fromARGB(255, 41, 5, 73),
-      body: Padding(padding: EdgeInsets.all(16),
+      backgroundColor: const Color.fromARGB(255, 41, 5, 73),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Search for a Quiz", style: TextStyle(
-              color: Colors.white, 
-              fontSize: 22.0,
-              fontWeight: FontWeight.bold
-              )
-            ),
-            SizedBox(height: 20.0),
-            TextField(
-              onChanged: (value) => updateList(value),
-              style: TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Color.fromARGB(255, 91, 73, 158),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                  borderSide: BorderSide.none
-                  ),
-                
-                hintText: "eg. Plants ",
-                prefixIcon: Icon(Icons.search),
-                prefixIconColor: Colors.purple.shade900
-                ),
-            ),
-            SizedBox(height: 20.0,),
-            Expanded(
-              child: display_list.length == 0 ? const Center(child: Text("No results found", style: TextStyle(
-                color: Colors.white, fontSize: 22.0, fontWeight: FontWeight.bold
-                  ),
-              ))
-              : ListView.builder(
-                itemCount: display_list.length,
-                itemBuilder: (context, index) => ListTile(
-                  contentPadding: EdgeInsets.all(8.0),
-                  title: Text(display_list[index].quiz_title!, style: 
-                  TextStyle(
-                    color: Colors.white, 
-                    fontWeight: FontWeight.bold
-                  ),
-                ),
-                subtitle: Text('By: ${display_list[index].author}', 
+          children: <Widget>[
+            const Text("Search for a Quiz",
                 style: TextStyle(
-                  color: Colors.white60,
-                ),
-                ),
-              ),
+                    color: Colors.white,
+                    fontSize: 22.0,
+                    fontWeight: FontWeight.bold)),
+            const SizedBox(height: 20.0),
+            TextField(
+              onChanged: (query) => _searchItems(query),
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                  filled: true,
+                  fillColor: const Color.fromARGB(255, 107, 88, 178),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                      borderSide: BorderSide.none),
+                  hintText: "eg. Plants ",
+                  prefixIcon: const Icon(Icons.search),
+                  prefixIconColor: const Color.fromARGB(255, 41, 10, 79)),
             ),
-          ),
+            const SizedBox(
+              height: 20.0,
+            ),
+            Expanded(
+              child: _searchResults.isEmpty
+                  ? const Center(
+                      child: Text(
+                      "No results found",
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 22.0,
+                          fontWeight: FontWeight.bold),
+                    ))
+                  : Container(
+                      //margin: const EdgeInsets.all(4.0),
+                      child: ListView.builder(
+              
+                        itemCount: _searchResults.length,
+                        itemBuilder: (context, index) {
+                          return  GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                            context, MaterialPageRoute(
+                                builder: (context) => FlashcardPage(quizId: _searchResults[index].id, name: _searchResults[index].term, userId: userId,),
+                                ),
+                              );
+                        // Handle the tap, you can navigate to another screen or perform any action with the quizId
+                        print('Tapped on Quiz ID: ');
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.all(16.0),
+                        child: Card(
+                          color: const Color.fromARGB(255, 86, 17, 183),
+                          elevation: 10,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                                12.0), // Set corner radius to 12 for rounded corners
+                          ),
+                          child: Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Text(
+                                  _searchResults[index].term,
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    color: Color.fromARGB(255, 255, 255, 255),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                                          ),
+                                  );          
+                                          
+                        },
+                      ),
+                    ),
+            ),
           ],
         ),
       ),
