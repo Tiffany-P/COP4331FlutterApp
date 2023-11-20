@@ -3,6 +3,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
+const cookieParser = require('cookie-parser');
 const PORT = process.env.PORT || 5000;
 
 const app = express();
@@ -36,20 +37,23 @@ app.use((req, res, next) =>
 // Use middleware
 app.use(cors());
 app.use(bodyParser.json());
+app.use(cookieParser());
 
 // Import api endpoints
 const usersRouter = require("./api/users");
 const quizzesRouter = require("./api/quizzes");
 const questionsRouter = require("./api/questions");
+const answersRouter = require("./api/answers");
 const savedRouter = require("./api/saved");
-const answersRouter = require("./api/answers")
+const cookiesRouter = require("./api/cookies");
 
 // Use routes
 app.use("/api/users", usersRouter);
 app.use("/api/quizzes", quizzesRouter);
 app.use("/api/questions", questionsRouter);
+app.use("/api/answers", answersRouter);
 app.use("/api/saved", savedRouter);
-app.use("/api/answers", answersRouter)
+app.use("/api/cookie", cookiesRouter);
 
 // Start server
 app.listen(PORT, () => {
