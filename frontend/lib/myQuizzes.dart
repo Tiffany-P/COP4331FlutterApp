@@ -77,15 +77,39 @@ class myQuizzesPage extends StatefulWidget {
 
 class _QuizzesPageState extends State<myQuizzesPage> {
   List<Map<String, dynamic>> quizList = [];
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
     print("userid" + userId);
-    fetchQuizNames();
+    fetchQuizID();
   }
 
-  Future<void> fetchQuizNames() async {
+  Future<void> fetchQuizNames(String quizId) async {
+    final response = await http.post(
+      Uri.parse('http://10.0.2.2:5000/api/quizzes/get'),
+      body: json.encode({'id': quizId}),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = json.decode(response.body);
+      print("Quiz Data:");
+      print(data);
+
+      if (data['Name'] != null) {
+        setState(() {
+          quizList.add({
+            'QuizId': quizId,
+            'QuizName': data['Name'], // Adjust to match your actual structure
+          });
+        });
+      }
+    }
+  }
+
+  Future<void> fetchQuizID() async {
     final response = await http.post(
       Uri.parse('http://10.0.2.2:5000/api/saved/get'),
       body: json.encode({'id': userId}),
@@ -99,7 +123,15 @@ class _QuizzesPageState extends State<myQuizzesPage> {
 
       setState(() {
         quizList = List<Map<String, dynamic>>.from(data);
+        isLoading = false;
       });
+
+      // Only fetch quiz names if there are saved quizzes
+      if (quizList.isNotEmpty) {
+        for (final quiz in quizList) {
+          fetchQuizNames(quiz['QuizId']);
+        }
+      }
     }
   }
 
@@ -111,34 +143,41 @@ class _QuizzesPageState extends State<myQuizzesPage> {
         backgroundColor: Color.fromARGB(255, 86, 17, 183),
       ),
       backgroundColor: Color.fromARGB(255, 56, 17, 91),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start, // Left-align the title
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              'Saved Quizzes', // Replace with your desired title
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Column(
+              crossAxisAlignment:
+                  CrossAxisAlignment.start, // Left-align the title
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    'Saved Quizzes', // Replace with your desired title
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: quizList.length,
+                    itemBuilder: (context, index) {
+                      final quiz = quizList[index];
+                      if (quiz['QuizId'] != null && quiz['QuizName'] != null) {
+                        return FlashCardWidget(
+                          quizId: quiz['QuizId'] as String,
+                          quizName: quiz['QuizName'] as String,
+                        );
+                      } else {
+                        return SizedBox(); // Return an empty SizedBox if either QuizId or QuizName is null
+                      }
+                    },
+                  ),
+                ),
+              ],
             ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: quizList.length,
-              itemBuilder: (context, index) {
-                final quiz = quizList[index];
-                return FlashCardWidget(
-                  quizId: quiz['QuizId'],
-                  quizName: quiz['QuizName'],
-                );
-              },
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -146,6 +185,7 @@ class _QuizzesPageState extends State<myQuizzesPage> {
 class FlashCardWidget extends StatelessWidget {
   final String quizId;
   final String quizName;
+  final currentIndex = 0;
 
   FlashCardWidget({required this.quizId, required this.quizName});
 
