@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:quiz_app/forgotPassword.dart';
 import 'dart:convert';
 import 'register.dart';
 import 'home.dart';
@@ -114,9 +115,12 @@ class LoginPage extends StatelessWidget {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () {
-                    // Handle button press
+                     Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ForgotPasswordPage()),
+                  );
                   },
-                  child: Text('Forgot password',
+                  child: Text('Forgot password?',
                       style:
                           TextStyle(color: Color.fromARGB(255, 158, 48, 189))),
                 ),

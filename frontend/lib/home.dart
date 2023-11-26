@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:quiz_app/default.dart';
-import 'package:quiz_app/myQuizzes.dart';
+import 'myQuizzes.dart';
 import 'searchQuizzes.dart';
 import 'flashcardsPage.dart';
+import 'savedQuizzes.dart';
 
 class HomePage extends StatefulWidget {
   final String id;
@@ -119,9 +120,9 @@ List<BoxInfo> getListInfo(String option) {
     else {
        boxInfoList = [
         // these are fake quizzes that have the plants id for now. replace id with actual id
-        BoxInfo(id: '65249bd5a5a3366c6ede8722', title: 'Anatomy', description: '', color: const Color.fromRGBO(79, 37, 133, 1)),
-        BoxInfo(id: '65249bd5a5a3366c6ede8722', title: "Leinecker's Quiz Answers", description: '', color: const Color.fromRGBO(79, 37, 133, 1)),
-        BoxInfo(id: '65249bd5a5a3366c6ede8722', title: 'Vocabulary', description: '', color: const Color.fromRGBO(79, 37, 133, 1)),
+        BoxInfo(id: '65249bd5a5a3366c6ede8722', title: 'Title', description: '', color: const Color.fromRGBO(79, 37, 133, 1)),
+        BoxInfo(id: '65249bd5a5a3366c6ede8722', title: "Title", description: '', color: const Color.fromRGBO(79, 37, 133, 1)),
+        BoxInfo(id: '65249bd5a5a3366c6ede8722', title: 'Title', description: '', color: const Color.fromRGBO(79, 37, 133, 1)),
         // Add more BoxInfo items as needed
       ];
     }
@@ -257,7 +258,7 @@ class DrawerWidget extends StatelessWidget {
               Navigator.push(
                     context,
                     //MaterialPageRoute(builder: (context) => SearchScreen()),
-                    MaterialPageRoute(builder: (context) =>  myQuizzesPage(id: userId)),
+                    MaterialPageRoute(builder: (context) =>  savedQuizzesPage(id: userId,)),
                   );
             },
           ),
@@ -268,7 +269,7 @@ class DrawerWidget extends StatelessWidget {
                Navigator.push(
                     context,
                     //MaterialPageRoute(builder: (context) => SearchScreen()),
-                    MaterialPageRoute(builder: (context) =>  myQuizzesPage(id: userId)),
+                    MaterialPageRoute(builder: (context) =>  myQuizzesPage(id: userId,)),
                   );
             },
           ),

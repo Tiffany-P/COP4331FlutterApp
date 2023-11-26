@@ -5,10 +5,10 @@ import 'flashcardsPage.dart';
 
 String userId = '';
 
-class myQuizzesPage extends StatefulWidget {
+class savedQuizzesPage extends StatefulWidget {
   String id;
 
-  myQuizzesPage({super.key, required this.id}){
+  savedQuizzesPage({super.key, required this.id}){
     userId = id;
   }
 
@@ -16,44 +16,66 @@ class myQuizzesPage extends StatefulWidget {
   _QuizzesPageState createState() => _QuizzesPageState();
 }
 
-class _QuizzesPageState extends State<myQuizzesPage> {
-   List<dynamic> quizList = [];
+class _QuizzesPageState extends State<savedQuizzesPage> {
+  List<Map<String, dynamic>> quizList = [];
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    print("userid$userId");
-    fetchQuizNames();
+     print("userid" + userId);
+    fetchQuizID();
   }
-  
-  Future<void> fetchQuizNames() async {
-    final response = await http.post(
-      Uri.parse('http://cop4331-27-c6dfafc737d8.herokuapp.com/api/quizzes/getfromuser'),
-      body: json.encode({'userId': userId, 'public': false}),
+
+  Future<void> fetchQuizNames(String quizId) async {
+     final response = await http.post(
+      Uri.parse('http://10.0.2.2:5000/api/quizzes/get'),
+      body: json.encode({'id': quizId}),
       headers: {'Content-Type': 'application/json'},
     );
 
     if (response.statusCode == 200) {
-      //final List<dynamic> data = json.decode(response.body);
       final Map<String, dynamic> data = json.decode(response.body);
+      print("Quiz Data:");
+      print(data);
 
-        print("Search Answers:");
-        print(data['result']);
-
-     if (data['result'] != null) {
+      if (data['Name'] != null) {
         setState(() {
-          quizList =  data['result'].map((e) => {
-            'QuizId': e['_id'] as String,
-            'QuizName': e['Name'] as String,
-          }).toList();
+          quizList.add({
+            'QuizId': quizId,
+            'QuizName': data['Name'], // Adjust to match your actual structure
+          });
         });
       }
-
-    }
-    else {
-      print("uh oh ${response.statusCode}");
     }
   }
+    Future<void> fetchQuizID() async {
+    final response = await http.post(
+      Uri.parse('http://10.0.2.2:5000/api/saved/get'),
+      body: json.encode({'id': userId}),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      print("Quiz Data:");
+      print(data);
+
+      setState(() {
+        quizList = List<Map<String, dynamic>>.from(data);
+        isLoading = false;
+      });
+
+      // Only fetch quiz names if there are saved quizzes
+      // commenting this makes it show 2 times
+      if (quizList.isNotEmpty) {
+        for (final quiz in quizList) {
+          fetchQuizNames(quiz['QuizId']);
+        }
+      }
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -63,14 +85,16 @@ class _QuizzesPageState extends State<myQuizzesPage> {
         backgroundColor: Color.fromARGB(255, 86, 17, 183),
       ),
       backgroundColor: Color.fromARGB(255, 56, 17, 91),
-      body: Column(
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Column(
               crossAxisAlignment:
                   CrossAxisAlignment.start, // Left-align the title
               children: [
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Text(
-                    'My Quizzes', // Replace with your desired title
+                    'Saved Quizzes', // Replace with your desired title
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 24,
@@ -103,8 +127,9 @@ class _QuizzesPageState extends State<myQuizzesPage> {
 class FlashCardWidget extends StatelessWidget {
   final String quizId;
   final String quizName;
+  final currentIndex = 0;
 
-  const FlashCardWidget({super.key, required this.quizId, required this.quizName});
+  FlashCardWidget({required this.quizId, required this.quizName});
 
   @override
   Widget build(BuildContext context) {
@@ -119,9 +144,9 @@ class FlashCardWidget extends StatelessWidget {
         print('Tapped on Quiz ID: $quizId');
       },
       child: Container(
-        margin: const EdgeInsets.all(16.0),
+        margin: EdgeInsets.all(16.0),
         child: Card(
-          color: const Color.fromARGB(255, 86, 17, 183),
+          color: Color.fromARGB(255, 86, 17, 183),
           elevation: 10,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(
@@ -130,10 +155,10 @@ class FlashCardWidget extends StatelessWidget {
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: EdgeInsets.all(16.0),
                 child: Text(
-                  quizName,
-                  style: const TextStyle(
+                  '$quizName',
+                  style: TextStyle(
                     fontSize: 18,
                     color: Color.fromARGB(255, 255, 255, 255),
                   ),

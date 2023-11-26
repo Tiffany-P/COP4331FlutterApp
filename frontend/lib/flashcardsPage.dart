@@ -3,6 +3,10 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:carousel_slider/carousel_slider.dart';
 //import 'package:fluttertoast/fluttertoast.dart';
+// public to false, userId 
+String user = '';
+String quiz = '';
+bool savedQuiz = false;
 
 class FlashcardPage extends StatefulWidget {
   final String quizId;
@@ -11,6 +15,8 @@ class FlashcardPage extends StatefulWidget {
 
   FlashcardPage({super.key, required this.quizId, required this.name, required this.userId}) {
     print('Quiz ID in constructor: $quizId');
+    user = userId;
+    quiz = quizId;
   }
 
   @override
@@ -24,12 +30,28 @@ class _FlashcardPageState extends State<FlashcardPage> with SingleTickerProvider
   int currentIndex = 0;
 
   late CarouselController _carouselController;
-
+  
   @override
   void initState() {
     super.initState();
     _carouselController = CarouselController();
+    checkIfSavedQuiz(widget.quizId);
     fetchQuestions(widget.quizId);
+  }
+
+@override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // This block will be executed when the widget is displayed again
+    refreshState();
+  }
+
+  void refreshState() {
+    setState(() {
+      // Update the state as needed
+      savedQuiz = false;
+    });
   }
 
   Future<void> fetchQuestions(String quizId) async {
@@ -138,53 +160,38 @@ class _FlashcardPageState extends State<FlashcardPage> with SingleTickerProvider
     _carouselController.previousPage();
   }
 
+  Future<void> checkIfSavedQuiz(String quizId) async {
+    final response = await http.post(
+      Uri.parse('http://10.0.2.2:5000/api/saved/get'),
+      body: json.encode({'id': user}),
+      headers: {'Content-Type': 'application/json'},
+    );
 
-Future<void> addQuiz() async {
-    print('Quiz ID in add quiz: ${widget.quizId}');
-    print('User ID in add quiz: ${widget.userId}');
-    String userId = widget.userId;
-    String quizId = widget.quizId;
-    const String apiUrl =
-      'http://10.0.2.2:5000/api/saved/add';
-    try {
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode({'userId': userId, 'quizId': quizId}),
-      );
+    if (response.statusCode == 200) {
+       List<Map<String, dynamic>> quizList = [];
+      final List<dynamic> data = json.decode(response.body);
+      print("Quiz Data:");
+      print(data);
 
-  
-      if (response.statusCode == 200) {
-        print("Quiz Added:");
-       
-       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-      content: Text("Quiz Saved"),
-        ));
-        /*Fluttertoast.showToast(
-          msg: "Quiz Saved",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 20,
-          fontSize: 16.0,
-        );
+      setState(() {
+        quizList = List<Map<String, dynamic>>.from(data);
+      });
 
-        */
-       
-      } else {
-        // Handle the case when no questions are found or an error occurs.
-        // You can show an error message or take appropriate action here.
-        print("error:");
+      // Only fetch quiz names if there are saved quizzes
+      if (quizList.isNotEmpty) {
+        for (final quiz in quizList) {
+          if(quiz['QuizId'] == quizId) {
+            savedQuiz = true;
+          }
+        }
       }
-    } catch (e) {
-      // Handle network or server connection issues.
-      // You can show an error message or take appropriate action here.
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
           title: const Text('Flashcards'),
@@ -259,10 +266,8 @@ Future<void> addQuiz() async {
               ),
             ]),
             const SizedBox(height: 30.0),
-            ElevatedButton(
-                onPressed: () {
-                  addQuiz();
-                },
+            /*ElevatedButton(
+                onPressed: _onButtonPressed,
                 style: ButtonStyle(
                   backgroundColor: MaterialStateProperty.all<Color>(
                       const Color.fromRGBO(48, 60, 84, 1)),
@@ -273,11 +278,127 @@ Future<void> addQuiz() async {
                     ),
                   ),
                 ),
-                child: const Text('Save Quiz'),
-              ),
+                child: Text('Text: $buttonText',),
+              ),*/
+              ToggleButton(),
           ],
         ),
       ),
+    );
+  }
+}
+class ToggleButton extends StatefulWidget {
+
+  @override
+  _ToggleButtonState createState() => _ToggleButtonState();
+}
+
+class _ToggleButtonState extends State<ToggleButton> {
+  bool isToggled = false;
+
+  Future<void> addQuiz() async {
+    print('Quiz ID in add quiz: ${quiz}');
+    print('User ID in add quiz: ${user}');
+
+    const String apiUrl =
+      'http://10.0.2.2:5000/api/saved/add';
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({'userId': user, 'quizId': quiz}),
+      );
+
+      if (response.statusCode == 200) {
+        print("Quiz Added:");
+       
+       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      content: Text("Quiz Saved"),
+        ));
+      
+      } else {
+        // Handle the case when no questions are found or an error occurs.
+        // You can show an error message or take appropriate action here.
+        print("error:");
+      }
+    } catch (e) {
+      // Handle network or server connection issues.
+      // You can show an error message or take appropriate action here.
+    }
+  }
+
+  Future<void> deleteQuiz() async {
+    print('Quiz ID in delete quiz: ${quiz}');
+    print('User ID in delete quiz: ${user}');
+
+    const String apiUrl =
+      'https://cop4331-27-c6dfafc737d8.herokuapp.com/api/saved/delete';
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({'userId': user, 'quizId': quiz}),
+      );
+
+
+      if (response.statusCode == 200) {
+        print("Quiz Deleted from Saved:");
+       
+       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      content: Text("Quiz Removed"),
+        ));
+        savedQuiz = false;
+      
+      } else {
+        // Handle the case when no questions are found or an error occurs.
+        // You can show an error message or take appropriate action here.
+        print("error:");
+      }
+    } catch (e) {
+      // Handle network or server connection issues.
+      // You can show an error message or take appropriate action here.
+    }
+  }
+  void _toggleButton() {
+    setState(() {
+      savedQuiz = !savedQuiz;
+
+      // Perform different actions based on the button state
+      if (savedQuiz) {
+        // Do something when the button is toggled
+        print('Button is Toggled');
+        deleteQuiz();
+
+      } else {
+        // Do something else when the button is not toggled
+        print('Button is Not Toggled');
+        addQuiz();
+
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+        style: ButtonStyle(
+          
+          backgroundColor: savedQuiz ? MaterialStateProperty.all<Color>(
+              Color.fromRGBO(22, 25, 33, 1)): MaterialStateProperty.all<Color>(
+              const Color.fromRGBO(48, 60, 84, 1)),
+          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18.0),
+              
+            ),
+          ),
+        ),
+      onPressed: _toggleButton,
+      child: Text(savedQuiz ? 'Saved' : 'Save Quiz'),
     );
   }
 }
