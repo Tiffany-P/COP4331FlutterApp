@@ -5,9 +5,12 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'login.dart';
 import 'home.dart';
+//import 'package:mailer/mailer.dart';
+//import 'package:mailer/smtp_server/gmail.dart';
 
 // Define the API endpoint URL
-final String apiUrl = 'http://10.0.2.2:5000/api/users/register';
+const String apiUrl =
+    'https://cop4331-27-c6dfafc737d8.herokuapp.com/api/users/register';
 
 class User {
   final String login;
@@ -55,6 +58,44 @@ Future<void> RegisterUser(BuildContext context, String login, String password,
       final refreshToken = responseData['refreshToken'];
 
       print("User: $login, Pass: $password");
+
+      String baseUrl =
+          "http://cop4331-27-c6dfafc737d8.herokuapp.com/api/users/verify";
+      Map<String, String> queryParams = {
+        "login": login,
+        "password": password,
+      };
+
+      List<String> encodedParams = [];
+
+      // Encode each query parameter
+      queryParams.forEach((key, value) {
+        encodedParams.add("$key=${Uri.encodeQueryComponent(value)}");
+      });
+
+      // Construct the URI with encoded query parameters
+      String uriWithParams = "$baseUrl?${encodedParams.join("&")}";
+
+      print("Final URI with encoded query parameters: $uriWithParams");
+      final verifyLink = uriWithParams;
+
+      sendEmail(verifyLink, email);
+
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text(
+            "Registration Successful. Verify email by clicking link in inbox"),
+      ));
+
+      /*Fluttertoast.showToast(
+        msg: "Registration Successful. Verify email by clicking link in inbox",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 15,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0
+    );*/
+
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => LoginPage()),
@@ -72,6 +113,51 @@ Future<void> RegisterUser(BuildContext context, String login, String password,
     // Handle network or server connection issues.
     print('Error: $e');
   }
+}
+
+void sendEmail(String verifyLink, String userEmail) async {
+  // Replace these values with your Mailjet API key and secret key
+  String apiKey = '5ada97d0e87cdefddf373bc99b622fe8';
+  String apiSecret = 'da1c2ddf1f7c3ed073aa2080de8bd237';
+
+  int templateId = 5324155;
+
+  // Create an email payload
+  Map<String, dynamic> emailPayload = {
+    'Messages': [
+      {
+        'From': {'Email': "quizwiz27@gmail.com", 'Name': 'QuizWiz'},
+        'To': [
+          {'Email': userEmail}
+        ],
+        'TemplateID': templateId,
+        'TemplateLanguage': true,
+        'Subject': 'Email Verification',
+        'Variables': {
+          'verify_link': verifyLink, // Replace with your template variables
+        },
+      }
+    ]
+  };
+
+  // Convert payload to JSON
+  String jsonPayload = jsonEncode(emailPayload);
+
+  // Send the email using Mailjet API
+  String apiUrl = 'https://api.mailjet.com/v3.1/send';
+  http.Response response = await http.post(
+    Uri.parse(apiUrl),
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization':
+          'Basic ' + base64Encode(utf8.encode('$apiKey:$apiSecret')),
+    },
+    body: jsonPayload,
+  );
+
+  // Print the response
+  print('Mailjet API Response: ${response.statusCode}');
+  print('Response Body: ${response.body}');
 }
 
 class RegisterPage extends StatelessWidget {

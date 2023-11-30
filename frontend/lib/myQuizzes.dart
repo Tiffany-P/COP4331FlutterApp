@@ -1,105 +1,58 @@
-// import 'package:flutter/material.dart';
-// import 'package:http/http.dart' as http;
-// import 'dart:convert';
-// import 'register.dart';
-
-// class myQuizzesPage extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text('QuizWizz'),
-//         backgroundColor: Color.fromARGB(255, 86, 17, 183),
-//         leading: GestureDetector(
-//           onTap: () {/* Write listener code here */},
-//           child: Icon(
-//             Icons.menu, // add custom icons also
-//           ),
-//         ),
-//         actions: <Widget>[
-//           Padding(
-//               padding: EdgeInsets.only(right: 20.0),
-//               child: GestureDetector(
-//                 onTap: () {},
-//                 child: Icon(
-//                   Icons.search,
-//                   size: 26.0,
-//                 ),
-//               )),
-//           Padding(
-//               padding: EdgeInsets.only(right: 20.0),
-//               child: GestureDetector(
-//                 onTap: () {},
-//                 child: Icon(Icons.more_vert),
-//               )),
-//         ],
-//       ),
-//       backgroundColor: Color.fromARGB(255, 41, 5, 73),
-//       body: Column(
-//         crossAxisAlignment: CrossAxisAlignment.start,
-//         children: <Widget>[
-//           const SizedBox(height: 30.0),
-//           Text(
-//             '   Popular',
-//             style: TextStyle(
-//               color: Colors.white, // Set text color to white
-//               fontSize: 23, // Set text font size
-//             ),
-//           ),
-//           const SizedBox(height: 30.0),
-//           Text(
-//             '   Suggested',
-//             style: TextStyle(
-//               color: Colors.white, // Set text color to white
-//               fontSize: 23, // Set text font size
-//             ),
-//           ),
-//           const SizedBox(height: 30.0),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'flashcardsPage.dart';
 
-final String userId = "653181459014bfbb8cff6c2c";
+String userId = '';
 
 class myQuizzesPage extends StatefulWidget {
-  // myQuizzesPage({required this.userId});
+  String id;
+
+  myQuizzesPage({super.key, required this.id}) {
+    userId = id;
+  }
 
   @override
   _QuizzesPageState createState() => _QuizzesPageState();
 }
 
 class _QuizzesPageState extends State<myQuizzesPage> {
-  List<Map<String, dynamic>> quizList = [];
+  List<dynamic> quizList = [];
 
   @override
   void initState() {
     super.initState();
-    print("userid" + userId);
+    print("userid$userId");
     fetchQuizNames();
   }
 
   Future<void> fetchQuizNames() async {
     final response = await http.post(
-      Uri.parse('http://10.0.2.2:5000/api/saved/get'),
-      body: json.encode({'id': userId}),
+      Uri.parse(
+          'http://cop4331-27-c6dfafc737d8.herokuapp.com/api/quizzes/getfromuser'),
+      body: json.encode({'userId': userId, 'public': false}),
       headers: {'Content-Type': 'application/json'},
     );
 
     if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
-      print("Quiz Data:");
-      print(data);
+      //final List<dynamic> data = json.decode(response.body);
+      final Map<String, dynamic> data = json.decode(response.body);
 
-      setState(() {
-        quizList = List<Map<String, dynamic>>.from(data);
-      });
+      print("Search Answers:");
+      print(data['result']);
+
+      if (data['result'] != null) {
+        setState(() {
+          quizList = data['result']
+              .map((e) => {
+                    'QuizId': e['_id'] as String,
+                    'QuizName': e['Name'] as String,
+                  })
+              .toList();
+        });
+      }
+    } else {
+      print("uh oh ${response.statusCode}");
     }
   }
 
@@ -107,7 +60,11 @@ class _QuizzesPageState extends State<myQuizzesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Our Logo'),
+        title: Image.asset(
+          'assets/images/logo.png',
+          width: 120,
+          height: 140,
+        ),
         backgroundColor: Color.fromARGB(255, 86, 17, 183),
       ),
       backgroundColor: Color.fromARGB(255, 56, 17, 91),
@@ -117,7 +74,7 @@ class _QuizzesPageState extends State<myQuizzesPage> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Text(
-              'Saved Quizzes', // Replace with your desired title
+              'My Quizzes', // Replace with your desired title
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 24,
@@ -130,10 +87,14 @@ class _QuizzesPageState extends State<myQuizzesPage> {
               itemCount: quizList.length,
               itemBuilder: (context, index) {
                 final quiz = quizList[index];
-                return FlashCardWidget(
-                  quizId: quiz['QuizId'],
-                  quizName: quiz['QuizName'],
-                );
+                if (quiz['QuizId'] != null && quiz['QuizName'] != null) {
+                  return FlashCardWidget(
+                    quizId: quiz['QuizId'] as String,
+                    quizName: quiz['QuizName'] as String,
+                  );
+                } else {
+                  return SizedBox(); // Return an empty SizedBox if either QuizId or QuizName is null
+                }
               },
             ),
           ),
@@ -147,7 +108,8 @@ class FlashCardWidget extends StatelessWidget {
   final String quizId;
   final String quizName;
 
-  FlashCardWidget({required this.quizId, required this.quizName});
+  const FlashCardWidget(
+      {super.key, required this.quizId, required this.quizName});
 
   @override
   Widget build(BuildContext context) {
@@ -156,15 +118,16 @@ class FlashCardWidget extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => FlashcardPage(quizId: quizId)),
+              builder: (context) => FlashcardPage(
+                  quizId: quizId, name: quizName, userId: userId)),
         );
         // Handle the tap, you can navigate to another screen or perform any action with the quizId
         print('Tapped on Quiz ID: $quizId');
       },
       child: Container(
-        margin: EdgeInsets.all(16.0),
+        margin: const EdgeInsets.all(16.0),
         child: Card(
-          color: Color.fromARGB(255, 86, 17, 183),
+          color: const Color.fromARGB(255, 86, 17, 183),
           elevation: 10,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(
@@ -173,10 +136,10 @@ class FlashCardWidget extends StatelessWidget {
           child: Column(
             children: [
               Padding(
-                padding: EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16.0),
                 child: Text(
-                  '$quizName',
-                  style: TextStyle(
+                  quizName,
+                  style: const TextStyle(
                     fontSize: 18,
                     color: Color.fromARGB(255, 255, 255, 255),
                   ),
