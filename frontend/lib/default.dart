@@ -31,19 +31,16 @@ class DefaultPage extends StatelessWidget {
               child: Column(
                 children: [
                   Container(
-                    margin: const EdgeInsets.only(top: 100.0),
+                    margin: const EdgeInsets.only(top: 10.0),
                     constraints: const BoxConstraints(
-                      maxWidth: 100,
+                      maxWidth: 600,
                     ),
-                    child: const Text('image placed here',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: Color.fromRGBO(255, 255, 255, 1),
-                            fontFamily: 'Inter',
-                            fontSize: 24,
-                            letterSpacing: 0,
-                            fontWeight: FontWeight.normal,
-                            height: 1)),
+                    child: Image.asset(
+                      'assets/images/wizard_desk.png',
+                      width: 320, // Increase the width to make the image larger
+                      height:
+                          300, // Increase the height to make the image larger
+                    ),
                   ),
                 ],
               ),
