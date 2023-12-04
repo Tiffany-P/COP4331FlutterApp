@@ -63,7 +63,7 @@ class _FlashcardPageState extends State<FlashcardPage> with SingleTickerProvider
 
   Future<void> fetchQuestions(String quizId) async {
     print('Quiz ID in fetch questions: $quizId');
-    const String apiUrl = 'http://cop4331-27-c6dfafc737d8.herokuapp.com/api/questions/search';
+    const String apiUrl = 'https://cop4331-27-c6dfafc737d8.herokuapp.com/api/questions/search';
     try {
       final response = await http.post(
         Uri.parse(apiUrl),
@@ -131,7 +131,7 @@ class _FlashcardPageState extends State<FlashcardPage> with SingleTickerProvider
     // );
 
     final response = await http.post(
-      Uri.parse('http://cop4331-27-c6dfafc737d8.herokuapp.com/api/answers/get'),
+      Uri.parse('https://cop4331-27-c6dfafc737d8.herokuapp.com/api/answers/get'),
       headers: <String, String>{
         'Content-Type': 'application/json',
       },
@@ -180,7 +180,7 @@ class _FlashcardPageState extends State<FlashcardPage> with SingleTickerProvider
 
   Future<void> checkIfSavedQuiz(String quizId) async {
     final response = await http.post(
-      Uri.parse('http://cop4331-27-c6dfafc737d8.herokuapp.com/api/saved/get'),
+      Uri.parse('https://cop4331-27-c6dfafc737d8.herokuapp.com/api/saved/get'),
       body: json.encode({'id': user}),
       headers: {'Content-Type': 'application/json'},
     );

@@ -29,7 +29,7 @@ class _QuizzesPageState extends State<savedQuizzesPage> {
 
   Future<void> fetchQuizNames(String quizId) async {
     final response = await http.post(
-      Uri.parse('http://cop4331-27-c6dfafc737d8.herokuapp.com/api/quizzes/get'),
+      Uri.parse('https://cop4331-27-c6dfafc737d8.herokuapp.com/api/quizzes/get'),
       body: json.encode({'id': quizId}),
       headers: {'Content-Type': 'application/json'},
     );
@@ -52,7 +52,7 @@ class _QuizzesPageState extends State<savedQuizzesPage> {
 
   Future<void> fetchQuizID() async {
     final response = await http.post(
-      Uri.parse('http://cop4331-27-c6dfafc737d8.herokuapp.com/api/saved/get'),
+      Uri.parse('https://cop4331-27-c6dfafc737d8.herokuapp.com/api/saved/get'),
       body: json.encode({'id': userId}),
       headers: {'Content-Type': 'application/json'},
     );
