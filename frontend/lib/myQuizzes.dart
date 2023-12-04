@@ -29,7 +29,7 @@ class _QuizzesPageState extends State<myQuizzesPage> {
   Future<void> fetchQuizNames() async {
     final response = await http.post(
       Uri.parse(
-          'http://cop4331-27-c6dfafc737d8.herokuapp.com/api/quizzes/getfromuser'),
+          'https://cop4331-27-c6dfafc737d8.herokuapp.com/api/quizzes/getfromuser'),
       body: json.encode({'userId': userId, 'public': false}),
       headers: {'Content-Type': 'application/json'},
     );

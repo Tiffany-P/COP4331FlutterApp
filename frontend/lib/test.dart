@@ -21,7 +21,7 @@ class _TestPageState extends State<TestPage> {
   Future<void> fetchQuestions(String quizId) async {
     
     print('Quiz ID in fetch questions2: $quizId');
-    const String apiUrl = 'http://cop4331-27-c6dfafc737d8.herokuapp.com/api/questions/search';
+    const String apiUrl = 'https://cop4331-27-c6dfafc737d8.herokuapp.com/api/questions/search';
     try {
       final response = await http.post(
         Uri.parse(apiUrl),
@@ -86,7 +86,7 @@ class _TestPageState extends State<TestPage> {
     // );
 
     final response = await http.post(
-      Uri.parse('http://cop4331-27-c6dfafc737d8.herokuapp.com/api/answers/get'),
+      Uri.parse('https://cop4331-27-c6dfafc737d8.herokuapp.com/api/answers/get'),
       headers: <String, String>{
         'Content-Type': 'application/json',
       },

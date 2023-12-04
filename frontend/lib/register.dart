@@ -60,7 +60,7 @@ Future<void> RegisterUser(BuildContext context, String login, String password,
       print("User: $login, Pass: $password");
 
       String baseUrl =
-          "http://cop4331-27-c6dfafc737d8.herokuapp.com/api/users/verify";
+          "https://cop4331-27-c6dfafc737d8.herokuapp.com/api/users/verify";
       Map<String, String> queryParams = {
         "login": login,
         "password": password,
