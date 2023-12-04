@@ -17,7 +17,7 @@ class savedQuizzesPage extends StatefulWidget {
 }
 
 class _QuizzesPageState extends State<savedQuizzesPage> {
-  List<Map<String, dynamic>> quizList = [];
+  List<dynamic> quizList = [];
   bool isLoading = true;
 
   @override
@@ -29,21 +29,21 @@ class _QuizzesPageState extends State<savedQuizzesPage> {
 
   Future<void> fetchQuizNames(String quizId) async {
     final response = await http.post(
-      Uri.parse('http://10.0.2.2:5000/api/quizzes/get'),
+      Uri.parse('http://cop4331-27-c6dfafc737d8.herokuapp.com/api/quizzes/get'),
       body: json.encode({'id': quizId}),
       headers: {'Content-Type': 'application/json'},
     );
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);
-      print("Quiz Data:");
+      print("Quiz Data2:");
       print(data);
 
-      if (data['Name'] != null) {
+      if (data['result'][0]['Name'] != null) {
         setState(() {
           quizList.add({
             'QuizId': quizId,
-            'QuizName': data['Name'], // Adjust to match your actual structure
+            'QuizName': data['result'][0]['Name'], // Adjust to match your actual structure
           });
         });
       }
@@ -52,18 +52,22 @@ class _QuizzesPageState extends State<savedQuizzesPage> {
 
   Future<void> fetchQuizID() async {
     final response = await http.post(
-      Uri.parse('http://10.0.2.2:5000/api/saved/get'),
+      Uri.parse('http://cop4331-27-c6dfafc737d8.herokuapp.com/api/saved/get'),
       body: json.encode({'id': userId}),
       headers: {'Content-Type': 'application/json'},
     );
 
     if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
+      final Map<String, dynamic> data = json.decode(response.body);
       print("Quiz Data:");
       print(data);
 
       setState(() {
-        quizList = List<Map<String, dynamic>>.from(data);
+        quizList = data['result']
+              .map((e) => {
+                    'QuizId': e['_id'],
+                  })
+              .toList();
         isLoading = false;
       });
 
@@ -74,6 +78,11 @@ class _QuizzesPageState extends State<savedQuizzesPage> {
           fetchQuizNames(quiz['QuizId']);
         }
       }
+    }
+    else {
+      setState(() {
+      isLoading = false;
+      });
     }
   }
 
@@ -107,7 +116,8 @@ class _QuizzesPageState extends State<savedQuizzesPage> {
                   ),
                 ),
                 Expanded(
-                  child: ListView.builder(
+                  child: (quizList.length > 0) ? 
+                  ListView.builder(
                     itemCount: quizList.length,
                     itemBuilder: (context, index) {
                       final quiz = quizList[index];
@@ -120,7 +130,15 @@ class _QuizzesPageState extends State<savedQuizzesPage> {
                         return SizedBox(); // Return an empty SizedBox if either QuizId or QuizName is null
                       }
                     },
-                  ),
+                  ) : const SizedBox(
+                          child: Center(
+                          child: Text("No Saved Quizzes", 
+                          style: TextStyle(
+                      color: Color.fromARGB(175, 255, 255, 255),
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,)),
+                          ),
+                        ),
                 ),
               ],
             ),

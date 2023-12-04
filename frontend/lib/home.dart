@@ -101,11 +101,12 @@ class _HomePageState extends State<HomePage> {
   void _logout(BuildContext context) {
     // Clear user session data (e.g., token, user info)
     // Navigate to the login screen
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => const DefaultPage(),
-      ),
-    );
+    Navigator.pushAndRemoveUntil(
+    context,
+    MaterialPageRoute(builder: (context) => const DefaultPage()),
+    (route) => false, // This predicate will remove all routes from the stack
+  );
+    
   }
 }
 

@@ -8,7 +8,7 @@ import 'register.dart';
 import 'home.dart';
 
 // Define the API endpoint URL
-final String apiUrl = 'http://10.0.2.2:5000/api/users/login';
+final String apiUrl = 'http://cop4331-27-c6dfafc737d8.herokuapp.com/api/users/login';
 
 class User {
   final String login;
@@ -39,8 +39,9 @@ Future<void> loginUser(
     );
 
     if (response.statusCode == 200) {
+
       final Map<String, dynamic> res = json.decode(response.body);
-      final String id = res['id'];
+      final id = res['result']['id'];
       print(id);
       if (id == null) {
       } else {

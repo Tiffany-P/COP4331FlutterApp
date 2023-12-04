@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 
-final String apiUrl = 'http://10.0.2.2:5000/api/users/login';
+final String apiUrl = 'http://cop4331-27-c6dfafc737d8.herokuapp.com/api/users/login';
 
 class ForgotPasswordPage extends StatefulWidget {
   @override

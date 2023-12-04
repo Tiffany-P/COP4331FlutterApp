@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:carousel_slider/carousel_slider.dart';
 
+import 'test.dart';
+
 //import 'package:fluttertoast/fluttertoast.dart';
 // public to false, userId
 String user = '';
@@ -28,11 +30,10 @@ class FlashcardPage extends StatefulWidget {
   _FlashcardPageState createState() => _FlashcardPageState();
 }
 
-class _FlashcardPageState extends State<FlashcardPage>
-    with SingleTickerProviderStateMixin {
+class _FlashcardPageState extends State<FlashcardPage> with SingleTickerProviderStateMixin {
   // Add your flashcard logic here
-  List<Flashcard> flashcards = [];
-  List<Flashcard> questionIDs = [];
+  List<dynamic> flashcards = [];
+  List<dynamic> questionIDs = [];
   int currentIndex = 0;
 
   late CarouselController _carouselController;
@@ -62,28 +63,36 @@ class _FlashcardPageState extends State<FlashcardPage>
 
   Future<void> fetchQuestions(String quizId) async {
     print('Quiz ID in fetch questions: $quizId');
-    const String apiUrl = 'http://10.0.2.2:5000/api/questions/get';
+    const String apiUrl = 'http://cop4331-27-c6dfafc737d8.herokuapp.com/api/questions/search';
     try {
       final response = await http.post(
         Uri.parse(apiUrl),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
-        body: jsonEncode({'quizId': quizId}),
+        body: jsonEncode({'term': '', 'quizId': quizId}),
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
+        final Map<String, dynamic> data = json.decode(response.body);
 
         print("Quiz Data:");
-        print(data);
+        print(data['result']);
 
         setState(() {
-          flashcards = data
+          flashcards = data['result']
               .map((item) => Flashcard(item['Question'], item['_id']))
               .toList();
           // flashcards = data.map((item) => Flashcard(item['_id'])).toList();
         });
+ 
+        print("Getting answer:");
+        for (dynamic flashcard in flashcards) {
+          final answer = await fetchAnswer(flashcard.questionId);
+          setState(() {
+            flashcard.answer = answer;
+          });
+        }
       } else {
         // Handle the case when no questions are found or an error occurs.
         // You can show an error message or take appropriate action here.
@@ -95,16 +104,11 @@ class _FlashcardPageState extends State<FlashcardPage>
     }
   }
 
-  Future<void> fetchAnswerAndFlipCard(bool flip) async {
-    print("fetching and flipping :");
+  Future<void> FlipCard(bool flip) async {
+    print("flipping :");
     if (currentIndex < flashcards.length) {
-      final questionId = flashcards[currentIndex].questionId;
-
-      print("Getting answer:");
-      final answer = await fetchAnswer(questionId);
+    
       setState(() {
-        flashcards[currentIndex].answer = answer;
-
         if (flip == false) {
           flashcards[currentIndex].isFlipped = false;
         } else if (flip == true) {
@@ -127,7 +131,7 @@ class _FlashcardPageState extends State<FlashcardPage>
     // );
 
     final response = await http.post(
-      Uri.parse('http://10.0.2.2:5000/api/answers/get'),
+      Uri.parse('http://cop4331-27-c6dfafc737d8.herokuapp.com/api/answers/get'),
       headers: <String, String>{
         'Content-Type': 'application/json',
       },
@@ -138,9 +142,20 @@ class _FlashcardPageState extends State<FlashcardPage>
       final Map<String, dynamic> data = json.decode(response.body);
 
       print("Quiz Data Answers:");
-      print(data);
+      print(data['result']);
 
-      return data['Answer'];
+      /* List<dynamic> res2 = data['result']
+              .map((e) => {
+                    
+                  e['Answer']
+                  })
+              .toList();
+      print("RES2 $res2");*/
+      List<dynamic> results = data['result'];
+
+      String name = results[0]['Answer'].toString();
+     
+      return name;
     }
     return 'Answer not found';
   }
@@ -148,7 +163,7 @@ class _FlashcardPageState extends State<FlashcardPage>
   void nextCard() {
     setState(() {
       currentIndex = (currentIndex + 1) % flashcards.length;
-      fetchAnswerAndFlipCard(false);
+      FlipCard(false);
     });
 
     _carouselController.nextPage();
@@ -157,7 +172,7 @@ class _FlashcardPageState extends State<FlashcardPage>
   void prevCard() {
     setState(() {
       currentIndex = (currentIndex - 1) % flashcards.length;
-      fetchAnswerAndFlipCard(false);
+      FlipCard(false);
     });
 
     _carouselController.previousPage();
@@ -165,19 +180,24 @@ class _FlashcardPageState extends State<FlashcardPage>
 
   Future<void> checkIfSavedQuiz(String quizId) async {
     final response = await http.post(
-      Uri.parse('http://10.0.2.2:5000/api/saved/get'),
+      Uri.parse('http://cop4331-27-c6dfafc737d8.herokuapp.com/api/saved/get'),
       body: json.encode({'id': user}),
       headers: {'Content-Type': 'application/json'},
     );
 
+    print("check if saved");
     if (response.statusCode == 200) {
-      List<Map<String, dynamic>> quizList = [];
-      final List<dynamic> data = json.decode(response.body);
-      print("Quiz Data:");
+      List<dynamic> quizList = [];
+      final Map<String, dynamic> data = json.decode(response.body);
+      print("Quiz Data in Check Saved:");
       print(data);
 
       setState(() {
-        quizList = List<Map<String, dynamic>>.from(data);
+        quizList = data['result']
+              .map((e) => {
+                    'QuizId': e['_id'],
+                  })
+              .toList();
       });
 
       // Only fetch quiz names if there are saved quizzes
@@ -198,11 +218,12 @@ class _FlashcardPageState extends State<FlashcardPage>
           title: const Text('Flashcards'),
           backgroundColor: const Color.fromARGB(255, 86, 17, 183)),
       backgroundColor: const Color.fromRGBO(67, 39, 161, 1),
-      body: Center(
+      body: SingleChildScrollView(
+        child: Center(
         child: Column(
           children: [
             Container(
-              margin: const EdgeInsets.only(top: 50.0, bottom: 100, left: 30),
+              margin: const EdgeInsets.only(top: 40.0, bottom: 45, left: 30),
               child: Align(
                 alignment: Alignment.topLeft,
                 child: Text(
@@ -214,6 +235,32 @@ class _FlashcardPageState extends State<FlashcardPage>
                 ),
               ),
             ),
+            Row(mainAxisAlignment: MainAxisAlignment.start, 
+            children: [
+              const Padding(padding: EdgeInsets.only(left: 40)),
+              ToggleButton(),
+              const Padding(padding: EdgeInsets.only(left: 20)),
+            ElevatedButton(
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(
+                          const Color.fromRGBO(48, 60, 84, 1)),
+                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18.0),
+                    ),
+                  ),
+                ),
+                onPressed: () {
+               Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) =>  TestPage(id: widget.quizId,)),
+                  );
+                },
+                child: Text("Take Test"),
+              ),
+            ]
+            ),
+            const SizedBox(height: 20.0),
             if (flashcards.isNotEmpty && currentIndex < flashcards.length)
               GestureDetector(
                 child: Center(
@@ -223,13 +270,15 @@ class _FlashcardPageState extends State<FlashcardPage>
                         (BuildContext context, int index, int realIndex) {
                       return FlashcardWidget(
                         flashcard: flashcards[currentIndex],
-                        onToggle: () => fetchAnswerAndFlipCard(true),
+                        onToggle: () => FlipCard(true),
                       );
                     },
                     options: CarouselOptions(
                       height: 250.0,
-                      viewportFraction: 0.9,
+                      viewportFraction: 0.8,
                       initialPage: 0,
+                      pageSnapping: true,
+                      enlargeCenterPage: true,
                       enableInfiniteScroll: true,
                       onPageChanged: (index, reason) {
                         setState(() {
@@ -269,23 +318,14 @@ class _FlashcardPageState extends State<FlashcardPage>
               ),
             ]),
             const SizedBox(height: 30.0),
-            /*ElevatedButton(
-                onPressed: _onButtonPressed,
-                style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all<Color>(
-                      const Color.fromRGBO(48, 60, 84, 1)),
-                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18.0),
-                     
-                    ),
-                  ),
-                ),
-                child: Text('Text: $buttonText',),
-              ),*/
-            ToggleButton(),
+            Container(
+              width: 400,
+              height: 400,
+              child: CardList(flashcards),
+            ),
           ],
         ),
+      ),
       ),
     );
   }
@@ -303,7 +343,7 @@ class _ToggleButtonState extends State<ToggleButton> {
     print('Quiz ID in add quiz: ${quiz}');
     print('User ID in add quiz: ${user}');
 
-    const String apiUrl = 'http://10.0.2.2:5000/api/saved/add';
+    const String apiUrl = 'https://cop4331-27-c6dfafc737d8.herokuapp.com/api/saved/add';
     try {
       final response = await http.post(
         Uri.parse(apiUrl),
@@ -371,11 +411,12 @@ class _ToggleButtonState extends State<ToggleButton> {
       if (savedQuiz) {
         // Do something when the button is toggled
         print('Button is Toggled');
-        deleteQuiz();
+        addQuiz();
+
       } else {
         // Do something else when the button is not toggled
         print('Button is Not Toggled');
-        addQuiz();
+        deleteQuiz();
       }
     });
   }
@@ -464,6 +505,58 @@ class CardSide extends StatelessWidget {
             text ?? '',
             style: const TextStyle(fontSize: 20, color: Colors.white),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class CardList extends StatelessWidget {
+  List<dynamic> flashcards;
+  CardList(this.flashcards, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      itemCount: flashcards.length,
+      itemBuilder: (context, index) {
+        return CardItem(
+          term: flashcards[index].question.toString(),
+          definition: flashcards[index].answer.toString()
+        );
+      },
+    );
+  }
+}
+
+class CardItem extends StatelessWidget {
+  final String term;
+  final String definition;
+
+  CardItem({required this.term, required this.definition});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: const Color.fromRGBO(48, 60, 84, 1),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                term,
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+            ),
+            Expanded(
+              child: Text(
+                definition as String,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
         ),
       ),
     );

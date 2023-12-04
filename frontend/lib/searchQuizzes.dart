@@ -24,7 +24,7 @@ class Item {
 
 class ItemService {
   final String apiUrl =
-      'http://10.0.2.2:5000/api/quizzes/search'; // Replace with your API endpoint
+      'http://cop4331-27-c6dfafc737d8.herokuapp.com/api/quizzes/search'; // Replace with your API endpoint
 
   Future<List> searchItems(String query) async {
     print("Term: $query");
