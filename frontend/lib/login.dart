@@ -8,7 +8,7 @@ import 'register.dart';
 import 'home.dart';
 
 // Define the API endpoint URL
-final String apiUrl = 'http://cop4331-27-c6dfafc737d8.herokuapp.com/api/users/login';
+final String apiUrl = 'https://cop4331-27-c6dfafc737d8.herokuapp.com/api/users/login';
 
 class User {
   final String login;

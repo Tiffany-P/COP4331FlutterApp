@@ -181,7 +181,7 @@ class _FlashcardPageState extends State<FlashcardPage> with SingleTickerProvider
   Future<void> checkIfSavedQuiz(String quizId) async {
     final response = await http.post(
       Uri.parse('https://cop4331-27-c6dfafc737d8.herokuapp.com/api/saved/get'),
-      body: json.encode({'id': user}),
+      body: json.encode({'userId': user}),
       headers: {'Content-Type': 'application/json'},
     );
 
