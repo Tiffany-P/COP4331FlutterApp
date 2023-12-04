@@ -53,7 +53,7 @@ class _QuizzesPageState extends State<savedQuizzesPage> {
   Future<void> fetchQuizID() async {
     final response = await http.post(
       Uri.parse('https://cop4331-27-c6dfafc737d8.herokuapp.com/api/saved/get'),
-      body: json.encode({'id': userId}),
+      body: json.encode({'userId': userId}),
       headers: {'Content-Type': 'application/json'},
     );
 
