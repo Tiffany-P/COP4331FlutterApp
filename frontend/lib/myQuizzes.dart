@@ -18,7 +18,7 @@ class myQuizzesPage extends StatefulWidget {
 
 class _QuizzesPageState extends State<myQuizzesPage> {
   List<dynamic> quizList = [];
-
+  bool isLoading = true;
   @override
   void initState() {
     super.initState();
@@ -38,21 +38,29 @@ class _QuizzesPageState extends State<myQuizzesPage> {
       //final List<dynamic> data = json.decode(response.body);
       final Map<String, dynamic> data = json.decode(response.body);
 
-      print("Search Answers:");
+      print("Search my quizzes:");
       print(data['result']);
 
-      if (data['result'] != null) {
+      if (data['result'] != null && data['result'][0]['Name']!= null) {
         setState(() {
           quizList = data['result']
               .map((e) => {
-                    'QuizId': e['_id'] as String,
-                    'QuizName': e['Name'] as String,
+                    
+                    'QuizId': e['_id'],
+                    'QuizName': e['Name'],
                   })
               .toList();
+          isLoading = false;
         });
       }
+        else {
+          setState(() {
+          isLoading = false;
+      });
+    }
     } else {
       print("uh oh ${response.statusCode}");
+      isLoading = false;
     }
   }
 
@@ -68,11 +76,13 @@ class _QuizzesPageState extends State<myQuizzesPage> {
         backgroundColor: Color.fromARGB(255, 86, 17, 183),
       ),
       backgroundColor: Color.fromARGB(255, 56, 17, 91),
-      body: Column(
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Column(
         crossAxisAlignment: CrossAxisAlignment.start, // Left-align the title
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
+          const Padding(
+            padding: EdgeInsets.all(16.0),
             child: Text(
               'My Quizzes', // Replace with your desired title
               style: TextStyle(
@@ -83,7 +93,7 @@ class _QuizzesPageState extends State<myQuizzesPage> {
             ),
           ),
           Expanded(
-            child: ListView.builder(
+            child: (quizList.length > 0) ? ListView.builder(
               itemCount: quizList.length,
               itemBuilder: (context, index) {
                 final quiz = quizList[index];
@@ -96,7 +106,16 @@ class _QuizzesPageState extends State<myQuizzesPage> {
                   return SizedBox(); // Return an empty SizedBox if either QuizId or QuizName is null
                 }
               },
-            ),
+            )
+            : const SizedBox(
+                  child: Center(
+                  child: Text("No Created Quizzes", 
+                  style: TextStyle(
+              color: Color.fromARGB(175, 255, 255, 255),
+              fontSize: 20,
+              fontWeight: FontWeight.bold,)),
+                  ),
+              ),
           ),
         ],
       ),
