@@ -253,11 +253,11 @@ class _FlashcardPageState extends State<FlashcardPage> with SingleTickerProvider
                 onPressed: () {
                Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) =>  TestPage(id: widget.quizId,)),
+                    MaterialPageRoute(builder: (context) =>  TestPage(id: widget.quizId, name: widget.name)),
                   );
                 },
                 child: Text("Take Test"),
-              ),
+              ),         
             ]
             ),
             const SizedBox(height: 20.0),

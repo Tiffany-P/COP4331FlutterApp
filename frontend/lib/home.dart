@@ -258,28 +258,22 @@ class DrawerWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      backgroundColor: const Color.fromARGB(255, 129, 160, 247),
+      backgroundColor: Color.fromARGB(255, 214, 221, 239),
       child: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[
-          UserAccountsDrawerHeader(
-            accountName: const Text(''),
-            accountEmail:
-                Text(userName, style: const TextStyle(fontSize: 20.0)),
-            currentAccountPicture: CircleAvatar(
-              child: ClipOval(
-                  child: Image.asset("assets/images/wizardicon.png",
-                      width: 90, height: 90, fit: BoxFit.cover)),
+          DrawerHeader(
+             child: Center(
+              child: Image.asset("assets/images/wizard-pfp.png",
+            ),
             ),
             decoration: const BoxDecoration(
                 color: Color.fromARGB(255, 86, 17, 183),
-                image: DecorationImage(
-                    image: AssetImage("assets/images/magicSparkles.jpg"),
-                    fit: BoxFit.cover)),
+               ),
           ),
           ListTile(
-            leading: const Icon(Icons.bookmark),
-            title: const Text('Saved Quizzes'),
+            
+            title: const Text('Saved Quizzes', textAlign: TextAlign.center,),
             selectedTileColor: const Color.fromARGB(255, 86, 17, 183),
             onTap: () {
               // Navigate to the home page or perform an action
@@ -294,7 +288,7 @@ class DrawerWidget extends StatelessWidget {
             },
           ),
           ListTile(
-            title: const Text('My Quizzes'),
+            title: const Text('My Quizzes', textAlign: TextAlign.center,),
             onTap: () {
               Navigator.push(
                 context,
@@ -304,6 +298,19 @@ class DrawerWidget extends StatelessWidget {
                           id: userId,
                         )),
               );
+            },
+          ),
+          const SizedBox(height: 370),
+          ListTile(
+            title: const Text('Logout', textAlign: TextAlign.center,),
+            selectedTileColor: const Color.fromARGB(255, 86, 17, 183),
+            onTap: () {
+              // Navigate to the home page or perform an action
+              Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const DefaultPage()),
+                  (route) => false, // This predicate will remove all routes from the stack
+                );
             },
           ),
           // Add more ListTile items for additional menu options
