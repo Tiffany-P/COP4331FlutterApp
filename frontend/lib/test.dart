@@ -3,11 +3,14 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 String quizId = '';
+String quizName = '';
 class TestPage extends StatefulWidget {
   String id;
+  String name;
 
-  TestPage({super.key, required this.id}) {
+  TestPage({super.key, required this.id, required this.name}) {
     quizId = id;
+    quizName = name;
   }
   @override
   _TestPageState createState() => _TestPageState();
@@ -17,6 +20,7 @@ class _TestPageState extends State<TestPage> {
   int score = 0;
   List<String?> selectedAnswers = [];
   bool quizSubmitted = false;
+  bool isLoading = true;
 
   Future<void> fetchQuestions(String quizId) async {
     
@@ -65,14 +69,21 @@ class _TestPageState extends State<TestPage> {
         setState(() {
           questions = ques;
           selectedAnswers = List.filled(questions.length, null);
+          isLoading = false;
         });
 
       } else {
         // Handle the case when no questions are found or an error occurs.
         // You can show an error message or take appropriate action here.
         print("error:");
+        setState(() {
+          isLoading = false;
+          });
       }
     } catch (e) {
+      setState(() {
+      isLoading = false;
+      });
       // Handle network or server connection issues.
       // You can show an error message or take appropriate action here.
     }
@@ -174,8 +185,23 @@ class _TestPageState extends State<TestPage> {
           title: const Text('Test'),
           backgroundColor: const Color.fromARGB(255, 86, 17, 183)),
       backgroundColor: const Color.fromRGBO(67, 39, 161, 1),
-      body: Column(
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Column(
         children: [
+          Container(
+              margin: const EdgeInsets.only(top: 30.0, bottom: 10, left: 30),
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: Text(
+                  widget.name,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 30.0,
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
           Expanded(
             child: Scrollbar(
               trackVisibility: true,
