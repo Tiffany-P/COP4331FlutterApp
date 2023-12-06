@@ -37,9 +37,9 @@ class DefaultPage extends StatelessWidget {
                     ),
                     child: Image.asset(
                       'assets/images/wizard_desk.png',
-                      width: 320, // Increase the width to make the image larger
+                      width: 390, // Increase the width to make the image larger
                       height:
-                          300, // Increase the height to make the image larger
+                          400, // Increase the height to make the image larger
                     ),
                   ),
                 ],

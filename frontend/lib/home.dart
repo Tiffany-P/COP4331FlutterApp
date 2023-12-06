@@ -102,11 +102,10 @@ class _HomePageState extends State<HomePage> {
     // Clear user session data (e.g., token, user info)
     // Navigate to the login screen
     Navigator.pushAndRemoveUntil(
-    context,
-    MaterialPageRoute(builder: (context) => const DefaultPage()),
-    (route) => false, // This predicate will remove all routes from the stack
-  );
-    
+      context,
+      MaterialPageRoute(builder: (context) => const DefaultPage()),
+      (route) => false, // This predicate will remove all routes from the stack
+    );
   }
 }
 
@@ -136,18 +135,18 @@ List<BoxInfo> getListInfo(String option) {
     boxInfoList = [
       // these are fake quizzes that have the plants id for now. replace id with actual id
       BoxInfo(
-          id: '65249bd5a5a3366c6ede8722',
-          title: 'Title',
+          id: '656fec51c3e0263de3dd9b43',
+          title: 'ATLA',
           description: '',
           color: const Color.fromRGBO(79, 37, 133, 1)),
       BoxInfo(
-          id: '65249bd5a5a3366c6ede8722',
-          title: "Title",
+          id: '656fee36c3e0263de3dd9b6b',
+          title: "Deltarune Quiz",
           description: '',
           color: const Color.fromRGBO(79, 37, 133, 1)),
       BoxInfo(
-          id: '65249bd5a5a3366c6ede8722',
-          title: 'Title',
+          id: '656feea3c3e0263de3dd9b76',
+          title: 'GTA 6 Trailer Trivia',
           description: '',
           color: const Color.fromRGBO(79, 37, 133, 1)),
       // Add more BoxInfo items as needed
@@ -263,17 +262,20 @@ class DrawerWidget extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: <Widget>[
           DrawerHeader(
-             child: Center(
-              child: Image.asset("assets/images/wizard-pfp.png",
-            ),
+            child: Center(
+              child: Image.asset(
+                "assets/images/wizard-pfp.png",
+              ),
             ),
             decoration: const BoxDecoration(
-                color: Color.fromARGB(255, 86, 17, 183),
-               ),
+              color: Color.fromARGB(255, 86, 17, 183),
+            ),
           ),
           ListTile(
-            
-            title: const Text('Saved Quizzes', textAlign: TextAlign.center,),
+            title: const Text(
+              'Saved Quizzes',
+              textAlign: TextAlign.center,
+            ),
             selectedTileColor: const Color.fromARGB(255, 86, 17, 183),
             onTap: () {
               // Navigate to the home page or perform an action
@@ -288,7 +290,10 @@ class DrawerWidget extends StatelessWidget {
             },
           ),
           ListTile(
-            title: const Text('My Quizzes', textAlign: TextAlign.center,),
+            title: const Text(
+              'My Quizzes',
+              textAlign: TextAlign.center,
+            ),
             onTap: () {
               Navigator.push(
                 context,
@@ -302,15 +307,19 @@ class DrawerWidget extends StatelessWidget {
           ),
           const SizedBox(height: 370),
           ListTile(
-            title: const Text('Logout', textAlign: TextAlign.center,),
+            title: const Text(
+              'Logout',
+              textAlign: TextAlign.center,
+            ),
             selectedTileColor: const Color.fromARGB(255, 86, 17, 183),
             onTap: () {
               // Navigate to the home page or perform an action
               Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (context) => const DefaultPage()),
-                  (route) => false, // This predicate will remove all routes from the stack
-                );
+                context,
+                MaterialPageRoute(builder: (context) => const DefaultPage()),
+                (route) =>
+                    false, // This predicate will remove all routes from the stack
+              );
             },
           ),
           // Add more ListTile items for additional menu options
