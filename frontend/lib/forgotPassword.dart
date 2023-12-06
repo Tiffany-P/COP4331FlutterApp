@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:quiz_app/resetPassword.dart';
 
 final String apiUrl = 'https://cop4331-27-c6dfafc737d8.herokuapp.com/api/users/login';
 
@@ -10,21 +11,74 @@ class ForgotPasswordPage extends StatefulWidget {
 }
 
 class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
-  TextEditingController emailController = TextEditingController();
+  TextEditingController userController = TextEditingController();
+  String userEmail = '';
 
-  void _sendPassLink() {
+  Future<void> fetchEmail(String userId) async {
+    print('Quiz ID in fetch questions: $userId');
+    const String apiUrl = 'https://cop4331-27-c6dfafc737d8.herokuapp.com/api/users/getemail';
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({'login': userId}),
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+
+        print("Get Email Data:");
+        print(data);
+
+        setState(() {
+          // Update the state as needed
+          userEmail = data['result']['Email'];
+        });
+        print("email: $userEmail");
+
+      } else {
+        // Handle the case when no questions are found or an error occurs.
+        // You can show an error message or take appropriate action here.
+        print("error:");
+      }
+    } catch (e) {
+      // Handle network or server connection issues.
+      // You can show an error message or take appropriate action here.
+    }
+  }
+  void _sendPassLink(String userId) {
     // Implement your logic to send a password reset link using the provided email
-    String email = emailController.text;
-    print('Sending password reset link to $email');
+    String login = userController.text;
+    fetchEmail(userId);
+     print('Sending password reset link to $userEmail');
     // Add your API call or other logic here
-    sendEmail(email);
+    String baseUrl =
+          "https://cop4331-27-c6dfafc737d8.herokuapp.com/doreset";
+      Map<String, String> queryParams = {
+        "login": login,
+      };
+
+      List<String> encodedParams = [];
+
+      // Encode each query parameter
+      queryParams.forEach((key, value) {
+        encodedParams.add("$key=${Uri.encodeQueryComponent(value)}");
+      });
+
+      // Construct the URI with encoded query parameters
+      String uriWithParams = "$baseUrl?${encodedParams.join("&")}";
+
+      print("Final URI with encoded query parameters: $uriWithParams");
+      final userLink = uriWithParams;
+      sendEmail(userEmail, userLink);
   }
 
-  void sendEmail(String userEmail) async {
+  void sendEmail(String userEmail, String userLink) async {
     // Replace these values with your Mailjet API key and secret key
     String apiKey = '5ada97d0e87cdefddf373bc99b622fe8';
     String apiSecret = 'da1c2ddf1f7c3ed073aa2080de8bd237';
-    String password = 'pass';
 
     // Create an email payload
     Map<String, dynamic> emailPayload = {
@@ -36,7 +90,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           ],
           'TemplateLanguage': true,
           'Subject': 'Password Recovery',
-          'TextPart': 'Test Test Password: $password',
+          'TextPart': 'Recover password with link: $userLink',
         }
       ]
     };
@@ -75,16 +129,15 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Text(
-                'Enter your email to reset your password',
+                'Enter the username associated with the account.',
                 style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w500),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 20.0),
               TextField(
-                controller: emailController,
-                keyboardType: TextInputType.emailAddress,
+                controller: userController,
                 decoration: const InputDecoration(
-                  labelText: 'Email',
+                  labelText: 'Username',
                   enabledBorder: UnderlineInputBorder(
                     borderSide: BorderSide(
                         color: Color.fromARGB(255, 86, 17, 183), width: 4.0),
@@ -94,14 +147,20 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                         color: Color.fromARGB(255, 86, 17, 183),
                         width: 4.0), // Set your desired color
                   ),
-                  hintText: 'Enter your email',
+                  hintText: 'Enter your username',
                   labelStyle:
                       TextStyle(color: Color.fromARGB(255, 86, 17, 183)),
                 ),
               ),
               const SizedBox(height: 20.0),
               ElevatedButton(
-                onPressed: _sendPassLink,
+                onPressed: () {
+                    _sendPassLink(userController.text);
+                    Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ResetPasswordPage(login2: userController.text)),
+                  );
+                },
                 style: ElevatedButton.styleFrom(
                     primary: Color.fromARGB(255, 158, 48, 189),
                     padding: const EdgeInsets.symmetric(
@@ -121,7 +180,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   }
 }
 
-void sendEmail() async {
+/*void sendEmail() async {
   // Replace these values with your Mailjet API key and secret key
   String apiKey = '5ada97d0e87cdefddf373bc99b622fe8';
   String apiSecret = 'da1c2ddf1f7c3ed073aa2080de8bd237';
@@ -160,4 +219,4 @@ void sendEmail() async {
   // Print the response
   print('Mailjet API Response: ${response.statusCode}');
   print('Response Body: ${response.body}');
-}
+}*/

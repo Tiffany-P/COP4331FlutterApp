@@ -2,9 +2,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:quiz_app/verifyEmail.dart';
 import 'dart:convert';
 import 'login.dart';
-import 'home.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 // Define the API endpoint URL
 const String apiUrl =
@@ -51,10 +53,7 @@ Future<void> RegisterUser(BuildContext context, String login, String password,
       // if (id != null) {
       // } else {
       // Login successful, handle the response, e.g., parse authentication tokens.
-      final responseData = json.decode(response.body);
-      final authToken = responseData['authToken'];
-      final refreshToken = responseData['refreshToken'];
-
+  
       print("User: $login, Pass: $password");
 
       String baseUrl =
@@ -77,16 +76,9 @@ Future<void> RegisterUser(BuildContext context, String login, String password,
       print("Final URI with encoded query parameters: $uriWithParams");
       final verifyLink = uriWithParams;
 
-      sendEmail(verifyLink, email);
-
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(
-            "Registration Successful. Email verification sent to $email"),
-      ));
-
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => LoginPage()),
+        MaterialPageRoute(builder: (context) => VerifyEmailPage(verifyLink, email)),
       );
       // }
 
@@ -101,46 +93,6 @@ Future<void> RegisterUser(BuildContext context, String login, String password,
     // Handle network or server connection issues.
     print('Error: $e');
   }
-}
-
-void sendEmail(String verifyLink, String userEmail) async {
-  // Replace these values with your Mailjet API key and secret key
-  String apiKey = '5ada97d0e87cdefddf373bc99b622fe8';
-  String apiSecret = 'da1c2ddf1f7c3ed073aa2080de8bd237';
-
-  // Create an email payload
-    Map<String, dynamic> emailPayload = {
-      'Messages': [
-        {
-          'From': {'Email': "quizwiz27@gmail.com", 'Name': 'QuizWiz'},
-          'To': [
-            {'Email': userEmail}
-          ],
-          'TemplateLanguage': true,
-          'Subject': 'Email Verification',
-          'TextPart': 'Click the link for password reset: $verifyLink',
-        }
-      ]
-    };
-
-  // Convert payload to JSON
-  String jsonPayload = jsonEncode(emailPayload);
-
-  // Send the email using Mailjet API
-  String apiUrl = 'https://api.mailjet.com/v3.1/send';
-  http.Response response = await http.post(
-    Uri.parse(apiUrl),
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization':
-          'Basic ' + base64Encode(utf8.encode('$apiKey:$apiSecret')),
-    },
-    body: jsonPayload,
-  );
-
-  // Print the response
-  print('Mailjet API Response: ${response.statusCode}');
-  print('Response Body: ${response.body}');
 }
 
 bool validatePassword(BuildContext context, String password) {
@@ -188,12 +140,20 @@ bool validatePassword(BuildContext context, String password) {
     );
   }
 
-class RegisterPage extends StatelessWidget {
+class RegisterPage extends StatefulWidget {
+    @override
+  _RegisterPageState createState() => _RegisterPageState();
+  
+  
+}
+class _RegisterPageState extends State<RegisterPage> {
+  
   TextEditingController usernameInput = TextEditingController();
   TextEditingController passwordInput = TextEditingController();
   TextEditingController firstNameInput = TextEditingController();
   TextEditingController lastNameInput = TextEditingController();
   TextEditingController emailInput = TextEditingController();
+  bool _obscureText = true;
 
   @override
   Widget build(BuildContext context) {
@@ -222,8 +182,16 @@ class RegisterPage extends StatelessWidget {
               ),
               TextField(
                 controller: passwordInput,
-                obscureText: true,
+                obscureText:  _obscureText,
                 decoration: InputDecoration(
+                  suffixIcon: IconButton(
+                  icon: Icon(_obscureText ? Icons.visibility : Icons.visibility_off),
+                  onPressed: () {
+                    setState(() {
+                      _obscureText = !_obscureText;
+                    });
+                  },
+                ),
                   labelText: 'Password',
                   labelStyle:
                       TextStyle(color: Color.fromARGB(255, 86, 17, 183)),
@@ -308,3 +276,4 @@ class RegisterPage extends StatelessWidget {
     );
   }
 }
+
